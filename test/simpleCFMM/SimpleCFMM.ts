@@ -224,5 +224,67 @@ describe('SimpleCFMM', function () {
     expect(balanceCarol).to.equal(7025);
   });
 
-  //TODO: add tests for getter funcs
+  it('should return balance of token for Bob', async function () {
+    const bobAmountA = this.instances.bob.encrypt32(100);
+    const bobAmountB = this.instances.bob.encrypt32(100);
+    const carolAmountA = this.instances.carol.encrypt32(200);
+    const carolAmountB = this.instances.carol.encrypt32(200);
+
+    // Get all approvals for transferFrom()
+    const txBobApproveA = await this.erc20.connect(this.signers.bob).approve(this.contractAddress, bobAmountA);
+    const txBobApproveB = await this.erc20_2.connect(this.signers.bob).approve(this.contractAddress, bobAmountB);
+    const txCarolApproveA = await this.erc20.connect(this.signers.carol).approve(this.contractAddress, carolAmountA);
+    const txCarolApproveB = await this.erc20_2.connect(this.signers.carol).approve(this.contractAddress, carolAmountB);
+    await Promise.all([txBobApproveA.wait(), txBobApproveB.wait(), txCarolApproveA.wait(), txCarolApproveB.wait()]);
+
+    // Bob and Carol add liquidity
+    const txCarolDeposit = await this.simpleCfmm
+      .connect(this.signers.carol)
+      .addLiquidity(carolAmountA, carolAmountB, { gasLimit: 5000000 });
+    const txBobDeposit = await this.simpleCfmm
+      .connect(this.signers.bob)
+      .addLiquidity(bobAmountA, bobAmountB, { gasLimit: 5000000 });
+    await Promise.all([txCarolDeposit.wait(), txBobDeposit.wait()]);
+
+    // Check if the balances changed
+    const instance = await createInstances(this.simpleCfmm, ethers, this.signers);
+    const tokenBob = instance.bob.getTokenSignature(this.simpleCfmm)!;
+    const encryptedBalanceBob = await this.simpleCfmm
+      .connect(this.signers.bob)
+      .getUserBalanceOfToken(this.contractERC20Address, tokenBob.publicKey, tokenBob.signature);
+    const balanceBob = instance.bob.decrypt(this.simpleCfmm, encryptedBalanceBob);
+    expect(balanceBob).to.equal(100);
+  });
+
+  it('should return balance of token A', async function () {
+    const bobAmountA = this.instances.bob.encrypt32(150);
+    const bobAmountB = this.instances.bob.encrypt32(150);
+    const carolAmountA = this.instances.carol.encrypt32(200);
+    const carolAmountB = this.instances.carol.encrypt32(200);
+
+    // Get all approvals for transferFrom()
+    const txBobApproveA = await this.erc20.connect(this.signers.bob).approve(this.contractAddress, bobAmountA);
+    const txBobApproveB = await this.erc20_2.connect(this.signers.bob).approve(this.contractAddress, bobAmountB);
+    const txCarolApproveA = await this.erc20.connect(this.signers.carol).approve(this.contractAddress, carolAmountA);
+    const txCarolApproveB = await this.erc20_2.connect(this.signers.carol).approve(this.contractAddress, carolAmountB);
+    await Promise.all([txBobApproveA.wait(), txBobApproveB.wait(), txCarolApproveA.wait(), txCarolApproveB.wait()]);
+
+    // Bob and Carol add liquidity
+    const txCarolDeposit = await this.simpleCfmm
+      .connect(this.signers.carol)
+      .addLiquidity(carolAmountA, carolAmountB, { gasLimit: 5000000 });
+    const txBobDeposit = await this.simpleCfmm
+      .connect(this.signers.bob)
+      .addLiquidity(bobAmountA, bobAmountB, { gasLimit: 5000000 });
+    await Promise.all([txCarolDeposit.wait(), txBobDeposit.wait()]);
+
+    // Check if the balances changed
+    const instance = await createInstances(this.simpleCfmm, ethers, this.signers);
+    const tokenBob = instance.bob.getTokenSignature(this.simpleCfmm)!;
+    const encryptedBalanceBob = await this.simpleCfmm
+      .connect(this.signers.bob)
+      .getBalanceOfToken(this.contractERC20Address, tokenBob.publicKey, tokenBob.signature);
+    const balanceBob = instance.bob.decrypt(this.simpleCfmm, encryptedBalanceBob);
+    expect(balanceBob).to.equal(350);
+  });
 });
