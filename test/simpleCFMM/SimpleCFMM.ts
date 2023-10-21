@@ -64,6 +64,11 @@ describe('SimpleCFMM', function () {
     this.instances = instances;
   });
 
+  it('should be deployed with the right owner', async function () {
+    const tx = this.simpleCfmm.owner();
+    expect(tx).to.be.equals(this.signers.alice.address);
+  });
+
   it('should allow Bob and Carol add liquidity and remove it after', async function () {
     const bobAmountA = this.instances.bob.encrypt32(100);
     const bobAmountB = this.instances.bob.encrypt32(100);
