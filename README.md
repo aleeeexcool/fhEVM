@@ -1,4 +1,4 @@
-### fhEVM testing
+# fhEVM testing
 
 It's a testing project for fhEVM. There used to be a dilemma in blockchain: keep your application and user data on-chain, allowing everyone to see it, or keep it privately off-chain and lose contract composability. Thanks to a breakthrough in homomorphic encryption, Zama’s fhEVM makes it possible to run confidential smart contracts on encrypted data, guaranteeing both confidentiality and composability.
 
